@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-
+import Home from "./user/pages/Home";
 import Login from "./components/login";
 import Register from "./components/register";
 function App() {
@@ -8,7 +8,7 @@ function App() {
 
       {/* Authentication pages */}
     <Route path="/login" element={<Login />} />
-
+<Route path="/home" element={<Home addToCart={addToCart} cartCount={cartCount} />} />
       <Route path="/register" element={<Register />} />
      
 
