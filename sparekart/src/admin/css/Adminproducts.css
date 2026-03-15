@@ -1,0 +1,370 @@
+/* ═══════════════════════════════════════
+   SHARED
+═══════════════════════════════════════ */
+.ap-page {
+  padding: 0;
+}
+
+.ap-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.ap-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════
+   LIST — TOP BAR
+═══════════════════════════════════════ */
+.ap-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ap-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Search — rounded pill style matching uploaded image */
+.ap-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid #dde3ed;
+  border-radius: 30px;
+  padding: 9px 16px;
+  width: 200px;
+}
+
+.ap-search:focus-within {
+  border-color: #2f6fed;
+}
+
+.ap-search input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #333;
+  width: 100%;
+  background: transparent;
+}
+
+.ap-search input::placeholder {
+  color: #b0b8c9;
+}
+
+/* Add Product button — large bold like image */
+.ap-add-btn {
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+/* ═══════════════════════════════════════
+   LIST — TABLE
+═══════════════════════════════════════ */
+.ap-table-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.ap-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ap-table th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  text-align: left;
+  padding: 14px 22px;
+  letter-spacing: 0.5px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ap-table td {
+  padding: 16px 22px;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: middle;
+}
+
+.ap-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ap-table tbody tr:hover td {
+  background: #fafbff;
+}
+
+/* Thumbnail */
+.ap-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: #e8eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #777;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.ap-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Name */
+.ap-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Category badge */
+.ap-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ap-cat-engine      { background: #dbeafe; color: #2563eb; }
+.ap-cat-brakes      { background: #dbeafe; color: #2563eb; }
+.ap-cat-tyres       { background: #dbeafe; color: #2563eb; }
+.ap-cat-lights      { background: #dbeafe; color: #2563eb; }
+.ap-cat-accessories { background: #dbeafe; color: #2563eb; }
+
+/* Price */
+.ap-price-col {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+/* Stock */
+.ap-stock {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ap-stock-green  { background: #f0fdf4; color: #16a34a; }
+.ap-stock-orange { background: #fef3c7; color: #d97706; }
+.ap-stock-red    { background: #fee2e2; color: #dc2626; }
+
+/* Action buttons */
+.ap-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ap-edit-btn,
+.ap-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.ap-edit-btn:hover { background: #eef4ff; }
+.ap-del-btn:hover  { background: #fef2f2; }
+
+/* Empty */
+.ap-empty {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════
+   ADD / EDIT FORM
+═══════════════════════════════════════ */
+.ap-form-header {
+  margin-bottom: 20px;
+}
+
+.ap-form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 34px 38px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  max-width: 780px;
+}
+
+.ap-field {
+  margin-bottom: 22px;
+}
+
+.ap-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.ap-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.ap-input:focus        { border-color: #2f6fed; }
+.ap-input::placeholder { color: #bbb; }
+.ap-input-err          { border-color: #ef4444; }
+
+.ap-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 5px 0 0;
+}
+
+/* Two-column row */
+.ap-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* File box */
+.ap-file-box {
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #fff;
+}
+
+.ap-file-edit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ap-img-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.ap-part-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  background: #e8eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #777;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ap-hint {
+  font-size: 12px;
+  color: #aaa;
+  margin: 6px 0 0;
+}
+
+/* Textarea */
+.ap-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  min-height: 110px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.ap-textarea:focus        { border-color: #2f6fed; }
+.ap-textarea::placeholder { color: #bbb; }
+
+/* Form buttons */
+.ap-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.ap-btn-blue {
+  background: #2f6fed;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+.ap-btn-blue:hover { background: #1d5cd6; }
+
+.ap-btn-white {
+  background: #fff;
+  color: #333;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  padding: 13px 0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+.ap-btn-white:hover { background: #f5f5f5; }
