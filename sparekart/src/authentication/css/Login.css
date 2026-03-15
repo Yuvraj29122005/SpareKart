@@ -1,0 +1,101 @@
+/* Reuse the same layout as Register/Forgot so all three
+   auth pages look identical. Only login‑specific tweaks here. */
+
+.login-page {
+  height: 100vh;
+  background: #f3f5f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.top-logo {
+  width: 160px;
+  margin-bottom: 20px;
+}
+
+.login-card {
+  width: 420px;
+  background: #fff;
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.circle-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #e7edff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  color: #2f6fed;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 18px;
+}
+
+.login-card label {
+  display: block;
+  text-align: left;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.forgot {
+  text-align: left;
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: #2f6fed;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.register {
+  margin-top: 18px;
+  font-size: 13px;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.field-error {
+  color: red;
+  font-size: 11px;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.input-error {
+  border-color: #ff4b4b;
+}
