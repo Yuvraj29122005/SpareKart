@@ -1,0 +1,84 @@
+.details-container {
+  padding: 40px 80px;
+  background: #f5f7fb;
+  min-height: 70vh;
+}
+
+.details-card {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  max-width: 900px;
+}
+
+/* HEADER */
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* STATUS BADGE */
+.status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.status.delivered {
+  background: #e4f7ea;
+  color: #2aa04a;
+}
+
+/* GRID INFO */
+.details-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.details-grid p {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* PRODUCTS */
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.total {
+  text-align: right;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 15px;
+  color: #2f6fed;
+}
+
+.back-btn {
+  margin-bottom: 15px;
+  background: #2f6fed;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.status-group {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-badge {
+  background: #e4f7ea;
+  color: #2aa04a;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
