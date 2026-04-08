@@ -252,7 +252,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📫 Contact
 
-**Project Author:** Yuvraj Dhadhal()
+**Project Author:** Yuvraj Dhadhal
+
 **Project Repository:** [https://github.com/Yuvraj29122005/Sparekart](https://github.com/Yuvraj29122005/Sparekart)
 
 <p align="right"><a href="#readme-top">⬆️ Back to Top</a></p>
