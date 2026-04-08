@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/your-username/Sparekart">
-    <img src="src/images/logo.png" alt="Sparekart Logo" width="250" style="border-radius: 10px; margin-bottom: 20px;">
+    <img src="Sparekart/src/images/logo.png" alt="Sparekart Logo" width="250" style="border-radius: 10px; margin-bottom: 20px;">
   </a>
 
   <h1 align="center">Sparekart</h1>
