@@ -1,32 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Adminlayout from "./Adminlayout";
 import "../css/AdminProducts.css";
-
-// ── Static default products (resets on refresh) ──
-const defaultProducts = [
-  { id: 1, name: "Engine Oil Filter",  category: "Engine",      price: 499,  stock: 50,  img: null, desc: "High-quality oil filter for engine protection." },
-  { id: 2, name: "Brake Disc Set",     category: "Brakes",      price: 3500, stock: 30,  img: null, desc: "Premium brake disc set for superior stopping power." },
-  { id: 3, name: "All-Season Tyre",    category: "Tyres",       price: 6500, stock: 40,  img: null, desc: "Durable all-season tyre with excellent grip." },
-  { id: 4, name: "LED Headlight",      category: "Lights",      price: 1899, stock: 60,  img: null, desc: "Bright LED headlight for better visibility." },
-  { id: 5, name: "Car Air Freshener",  category: "Accessories", price: 199,  stock: 100, img: null, desc: "Long-lasting car air freshener with premium fragrance." },
-  { id: 6, name: "Spark Plugs Set",    category: "Engine",      price: 799,  stock: 25,  img: null, desc: "High-performance spark plugs for smooth engine running." },
-  { id: 7, name: "Brake Pads",         category: "Brakes",      price: 1299, stock: 45,  img: null, desc: "Premium brake pads for safe and reliable braking." },
-  { id: 8, name: "Fog Light Set",      category: "Lights",      price: 1599, stock: 60,  img: null, desc: "Powerful fog lights for low-visibility conditions." },
-];
+import { apiFetch } from "../../data/api";
 
 const emptyForm = {
-  name: "", category: "Engine", price: "", stock: "", img: null, imgPreview: null, desc: "",
+  name: "", category: "Engine", price: "", stock: "", img: "", desc: "",
 };
 
 const categories = ["Engine", "Brakes", "Tyres", "Lights", "Accessories"];
 
 function AdminProducts() {
-  const [products, setProducts] = useState(defaultProducts);
+  const [products, setProducts] = useState([]);
   const [search, setSearch]     = useState("");
   const [view, setView]         = useState("list"); // "list" | "add" | "edit"
   const [form, setForm]         = useState(emptyForm);
   const [editId, setEditId]     = useState(null);
   const [errors, setErrors]     = useState({});
+  const [loading, setLoading]   = useState(true);
+
+  const loadProducts = async () => {
+    try {
+      const data = await apiFetch("/products");
+      setProducts(data);
+    } catch {
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
   // ── Filtered list ──
   const filtered = products.filter((p) =>
@@ -38,14 +43,6 @@ function AdminProducts() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  // ── Handle image pick ──
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setForm((prev) => ({ ...prev, img: url, imgPreview: url }));
   };
 
   // ── Validate ──
@@ -61,31 +58,32 @@ function AdminProducts() {
   // ── Add product ──
   const handleAdd = () => {
     if (!validate()) return;
-    const maxId = products.reduce((max, p) => Math.max(max, p.id), 0);
-    const newProduct = {
-      id:       maxId + 1,
-      name:     form.name.trim(),
-      category: form.category,
-      price:    parseFloat(form.price),
-      stock:    parseInt(form.stock),
-      img:      form.img,
-      desc:     form.desc.trim(),
-    };
-    setProducts((prev) => [...prev, newProduct]);
-    setForm(emptyForm);
-    setView("list");
+    apiFetch("/products", {
+      method: "POST",
+      body: JSON.stringify({
+        name: form.name.trim(),
+        category: form.category,
+        price: parseFloat(form.price),
+        stock: parseInt(form.stock, 10),
+        img: form.img || "",
+        desc: form.desc.trim() || "No description",
+      })
+    }).then(async () => {
+      setForm(emptyForm);
+      setView("list");
+      await loadProducts();
+    });
   };
 
   // ── Open edit ──
   const openEdit = (product) => {
-    setEditId(product.id);
+    setEditId(product._id);
     setForm({
       name:       product.name,
       category:   product.category,
       price:      String(product.price),
       stock:      String(product.stock),
-      img:        product.img,
-      imgPreview: product.img,
+      img:        product.img || "",
       desc:       product.desc || "",
     });
     setErrors({});
@@ -95,22 +93,29 @@ function AdminProducts() {
   // ── Update product ──
   const handleUpdate = () => {
     if (!validate()) return;
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === editId
-          ? { ...p, name: form.name.trim(), category: form.category, price: parseFloat(form.price), stock: parseInt(form.stock), img: form.img || p.img, desc: form.desc.trim() }
-          : p
-      )
-    );
-    setView("list");
-    setEditId(null);
-    setForm(emptyForm);
+    apiFetch(`/products/${editId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        name: form.name.trim(),
+        category: form.category,
+        price: parseFloat(form.price),
+        stock: parseInt(form.stock, 10),
+        img: form.img || "",
+        desc: form.desc.trim() || "No description",
+      })
+    }).then(async () => {
+      setView("list");
+      setEditId(null);
+      setForm(emptyForm);
+      await loadProducts();
+    });
   };
 
   // ── Delete product ──
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      await apiFetch(`/products/${id}`, { method: "DELETE" });
+      await loadProducts();
     }
   };
 
@@ -183,11 +188,16 @@ function AdminProducts() {
             </div>
 
             <div className="ap-field">
-              <label className="ap-label">🖼 Product Image (choose local file)</label>
-              <div className="ap-file-box">
-                <input type="file" accept="image/*" onChange={handleImage} />
-              </div>
-              <p className="ap-hint">Select a file from your device. Stored locally without reloading.</p>
+              <label className="ap-label">🖼 Product Image URL</label>
+              <input 
+                className="ap-input" 
+                name="img" 
+                type="url" 
+                placeholder="https://example.com/image.jpg" 
+                value={form.img} 
+                onChange={handleChange} 
+              />
+              <p className="ap-hint">Provide a direct URL to the product image.</p>
             </div>
 
             <div className="ap-field">
@@ -270,15 +280,21 @@ function AdminProducts() {
             </div>
 
             <div className="ap-field">
-              <label className="ap-label">🖼 Product Image (choose local file)</label>
-              <div className="ap-file-box ap-file-edit">
-                {form.imgPreview && (
-                  <img src={form.imgPreview} alt="preview" className="ap-img-thumb" />
+              <label className="ap-label">🖼 Product Image URL</label>
+              <div className="ap-file-box ap-file-edit" style={{ border: 'none', padding: 0, background: 'transparent', minHeight: 'auto' }}>
+                {form.img && (
+                  <img src={form.img} alt="preview" className="ap-img-thumb" style={{ marginBottom: '10px' }} />
                 )}
-                {!form.imgPreview && <div className="ap-part-box">Part</div>}
-                <input type="file" accept="image/*" onChange={handleImage} />
               </div>
-              <p className="ap-hint">Leave empty to keep the existing image</p>
+              <input 
+                className="ap-input" 
+                name="img" 
+                type="url" 
+                placeholder="https://example.com/image.jpg" 
+                value={form.img} 
+                onChange={handleChange} 
+              />
+              <p className="ap-hint">Provide a direct URL to the product image.</p>
             </div>
 
             <div className="ap-field">
@@ -306,6 +322,16 @@ function AdminProducts() {
   // ═══════════════════════════════════════
   // VIEW: PRODUCT LIST
   // ═══════════════════════════════════════
+  if (loading) {
+    return (
+      <Adminlayout>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh", width: "100%" }}>
+          <h3>Loading products...</h3>
+        </div>
+      </Adminlayout>
+    );
+  }
+
   return (
     <Adminlayout>
       <div className="ap-page">
@@ -357,7 +383,7 @@ function AdminProducts() {
                 </tr>
               ) : (
                 filtered.map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p._id}>
                     <td>
                       <div className="ap-thumb">
                         {p.img ? <img src={p.img} alt={p.name} /> : <span>Part</span>}
@@ -381,7 +407,7 @@ function AdminProducts() {
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                           </svg>
                         </button>
-                        <button className="ap-del-btn" title="Delete" onClick={() => handleDelete(p.id)}>
+                        <button className="ap-del-btn" title="Delete" onClick={() => handleDelete(p._id)}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />

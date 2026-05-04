@@ -1,40 +1,56 @@
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Adminlayout from "./Adminlayout";
 import "../css/AdminOrderDetails.css";
-
-const allOrders = [
-  {
-    id: "ORD001",
-    status: "Completed",
-    date: "Jan 28, 2026",
-    payment: "Paid via UPI",
-    items: [
-      { id: 1, name: "Premium Brake Pads", qty: 2, price: 2599 },
-      { id: 2, name: "Engine Oil Filter",  qty: 1, price: 499  },
-    ],
-    customer: { name: "John Doe", since: "2025", email: "john.doe@example.com", phone: "+91 98765 43210" },
-    shipping:  { line1: "123 Main Street, Apt 4B", city: "Ahmedabad, GJ 380001", country: "India" },
-  },
-  {
-    id: "ORD002",
-    status: "Pending",
-    date: "Jan 30, 2026",
-    payment: "Paid via Online",
-    items: [
-      { id: 1, name: "LED Headlight", qty: 1, price: 1899 },
-    ],
-    customer: { name: "Jane Smith", since: "2025", email: "jane@example.com", phone: "+91 91234 56789" },
-    shipping:  { line1: "456 Park Avenue", city: "Surat, GJ 395001", country: "India" },
-  },
-];
+import { apiFetch } from "../../data/api";
 
 function AdminOrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const order = allOrders.find((o) => o.id === id);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch(`/admin/orders/${id}`);
+        setOrder(data);
+      } catch {
+        setOrder(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
 
-  if (!order) {
+  const normalized = useMemo(() => {
+    if (!order) return null;
+    return {
+      id: order._id,
+      status: order.paymentStatus,
+      date: new Date(order.createdAt).toLocaleDateString(),
+      payment: `${order.paymentStatus} via ${order.paymentMethod}`,
+      items: order.items.map((item, idx) => ({ ...item, id: idx + 1 })),
+      customer: {
+        name: order.user?.name || "Customer",
+        since: new Date(order.createdAt).getFullYear(),
+        email: order.user?.email || "N/A",
+        phone: "N/A"
+      },
+      shipping: {
+        line1: order.shippingAddress,
+        city: "",
+        country: "India"
+      }
+    };
+  }, [order]);
+
+  if (loading) {
+    return <Adminlayout><div className="aod-page"><p>Loading...</p></div></Adminlayout>;
+  }
+
+  if (!normalized) {
     return (
       <Adminlayout>
         <div className="aod-page">
@@ -48,7 +64,7 @@ function AdminOrderDetails() {
     );
   }
 
-  const subtotal  = order.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const subtotal  = normalized.items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const shipping  = 0;
   const total     = subtotal + shipping;
 
@@ -63,9 +79,9 @@ function AdminOrderDetails() {
         {/* ── Order Meta ── */}
         <div className="aod-meta">
           <div className="aod-meta-left">
-            <span className="aod-order-id">Order #{order.id}</span>
-            <span className={`aod-badge aod-badge-${order.status.toLowerCase()}`}>
-              {order.status}
+            <span className="aod-order-id">Order #{normalized.id}</span>
+            <span className={`aod-badge aod-badge-${normalized.status.toLowerCase()}`}>
+              {normalized.status}
             </span>
           </div>
         </div>
@@ -79,14 +95,14 @@ function AdminOrderDetails() {
               <line x1="8" y1="2" x2="8" y2="6" />
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            {order.date}
+            {normalized.date}
           </span>
           <span className="aod-meta-item">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
               <line x1="1" y1="10" x2="23" y2="10" />
             </svg>
-            {order.payment}
+            {normalized.payment}
           </span>
         </div>
 
@@ -98,7 +114,7 @@ function AdminOrderDetails() {
 
             {/* Items */}
             <div className="aod-items">
-              {order.items.map((item) => (
+              {normalized.items.map((item) => (
                 <div className="aod-item-row" key={item.id}>
                   <div className="aod-item-left">
                     <div className="aod-item-img">
@@ -151,11 +167,11 @@ function AdminOrderDetails() {
 
               <div className="aod-customer-top">
                 <div className="aod-avatar">
-                  {order.customer.name.charAt(0)}
+                  {normalized.customer.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="aod-customer-name">{order.customer.name}</p>
-                  <p className="aod-customer-since">Customer since {order.customer.since}</p>
+                  <p className="aod-customer-name">{normalized.customer.name}</p>
+                  <p className="aod-customer-since">Customer since {normalized.customer.since}</p>
                 </div>
               </div>
 
@@ -165,13 +181,13 @@ function AdminOrderDetails() {
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                  {order.customer.email}
+                  {normalized.customer.email}
                 </p>
                 <p className="aod-contact-row">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.58 1.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.81a16 16 0 0 0 6.29 6.29l1.93-1.93a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22.73 15.5v1.42z" />
                   </svg>
-                  {order.customer.phone}
+                  {normalized.customer.phone}
                 </p>
               </div>
             </div>
@@ -186,9 +202,9 @@ function AdminOrderDetails() {
                 Shipping Address
               </h3>
               <div className="aod-address">
-                <p>{order.shipping.line1}</p>
-                <p>{order.shipping.city}</p>
-                <p>{order.shipping.country}</p>
+                <p>{normalized.shipping.line1}</p>
+                <p>{normalized.shipping.city}</p>
+                <p>{normalized.shipping.country}</p>
               </div>
             </div>
 

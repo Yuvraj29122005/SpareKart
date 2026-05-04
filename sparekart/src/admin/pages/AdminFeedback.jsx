@@ -1,28 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Adminlayout from "./Adminlayout";
 import "../css/AdminFeedback.css";
+import { apiFetch } from "../../data/api";
 
 function AdminFeedback() {
   const [search, setSearch] = useState("");
+  const [feedbackList, setFeedbackList] = useState([]);
 
-  const dummyFeedback = [
-    {
-      id: 1,
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      date: "2026-01-25",
-      message: "Great service! Products arrived on time and in perfect condition.",
-    },
-    {
-      id: 2,
-      name: "Bob Wilson",
-      email: "bob@example.com",
-      date: "2026-01-27",
-      message: "Good quality parts at reasonable prices. Will order again.",
-    },
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch("/feedback");
+        const mapped = data.map((f) => ({
+          id: f._id,
+          name: f.name,
+          email: f.email,
+          date: new Date(f.createdAt).toISOString().split("T")[0],
+          message: f.message
+        }));
+        setFeedbackList(mapped);
+      } catch {
+        setFeedbackList([]);
+      }
+    };
+    load();
+  }, []);
 
-  const filtered = dummyFeedback.filter(
+  const filtered = feedbackList.filter(
     (f) =>
       f.name.toLowerCase().includes(search.toLowerCase()) ||
       f.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,7 +44,7 @@ function AdminFeedback() {
         <div className="af-stats">
           <div className="af-stat-card">
             <p className="af-stat-label">Total Feedback</p>
-            <p className="af-stat-value">{dummyFeedback.length}</p>
+            <p className="af-stat-value">{feedbackList.length}</p>
           </div>
           <div className="af-stat-card">
             <p className="af-stat-label">This Week</p>

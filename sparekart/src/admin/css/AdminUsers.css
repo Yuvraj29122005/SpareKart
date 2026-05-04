@@ -142,7 +142,7 @@
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .au-table {
@@ -161,6 +161,13 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+.au-table th:first-child {
+  border-top-left-radius: 10px;
+}
+.au-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
 .au-table td {
   padding: 14px 20px;
   font-size: 13px;
@@ -171,6 +178,14 @@
 
 .au-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.au-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+.au-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
 }
 
 .au-table tbody tr:hover td {
@@ -329,4 +344,12 @@
 
 .au-menu-remove:hover {
   background: #fee2e2;
+}
+
+.au-menu-active {
+  color: #16a34a;
+}
+
+.au-menu-active:hover {
+  background: #dcfce7;
 }

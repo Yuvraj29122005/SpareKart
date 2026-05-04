@@ -1,36 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Adminlayout from "./Adminlayout";
 import "../css/AdminOrders.css";
-
-const allOrders = [
-  {
-    id: "ORD001",
-    customer: "John Doe",
-    items: "2 items",
-    total: "₹5,498",
-    payment: "UPI",
-    status: "Completed",
-    date: "2026-01-28",
-  },
-  {
-    id: "ORD002",
-    customer: "Jane Smith",
-    items: "1 item",
-    total: "₹1,899",
-    payment: "Online",
-    status: "Pending",
-    date: "2026-01-30",
-  },
-];
+import { apiFetch } from "../../data/api";
 
 function AdminOrders() {
   const navigate = useNavigate();
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState("All Status");
   const [dropOpen, setDropOpen] = useState(false);
+  const [allOrders, setAllOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filterOptions = ["All Status", "Completed", "Pending", "Processing"];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch("/admin/orders");
+        const mapped = data.map((o) => ({
+          id: o._id,
+          customer: o.user?.name || "Customer",
+          items: `${o.items.length} item(s)`,
+          total: `₹${Number(o.totalAmount || 0).toLocaleString()}`,
+          payment: o.paymentMethod,
+          status: o.paymentStatus,
+          date: new Date(o.createdAt).toISOString().split("T")[0],
+        }));
+        setAllOrders(mapped);
+      } catch {
+        setAllOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleClearHistory = async () => {
+    if (!window.confirm("Are you sure you want to delete all order history? This action cannot be undone.")) return;
+    try {
+      await apiFetch("/admin/orders", { method: "DELETE" });
+      setAllOrders([]);
+      alert("Order history cleared successfully!");
+    } catch (err) {
+      alert(err.message || "Failed to clear order history");
+    }
+  };
+
+  const filterOptions = ["All Status", "Paid", "Pending", "Failed"];
 
   const filtered = allOrders.filter((o) => {
     const matchSearch =
@@ -41,15 +57,42 @@ function AdminOrders() {
   });
 
   const totalRevenue = allOrders
-    .filter((o) => o.status === "Completed")
+    .filter((o) => o.status === "Paid")
     .reduce((sum, o) => sum + parseInt(o.total.replace(/[₹,]/g, "")), 0);
+
+  if (loading) {
+    return (
+      <Adminlayout>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh", width: "100%" }}>
+          <h3>Loading orders...</h3>
+        </div>
+      </Adminlayout>
+    );
+  }
 
   return (
     <Adminlayout>
       <div className="ao-page">
 
         {/* ── Title ── */}
-        <h2 className="ao-title">Manage Orders</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 className="ao-title">Manage Orders</h2>
+          <button 
+            onClick={handleClearHistory}
+            style={{ 
+              background: "#ff4d4f", 
+              color: "#fff", 
+              border: "none", 
+              padding: "8px 16px", 
+              borderRadius: "6px", 
+              cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 2px 4px rgba(255, 77, 79, 0.2)"
+            }}
+          >
+            Clear Order History
+          </button>
+        </div>
 
         {/* ── Stat Cards ── */}
         <div className="ao-stats">
@@ -58,8 +101,8 @@ function AdminOrders() {
             <p className="ao-stat-value">{allOrders.length}</p>
           </div>
           <div className="ao-stat-card">
-            <p className="ao-stat-label">Completed</p>
-            <p className="ao-stat-value ao-green">{allOrders.filter((o) => o.status === "Completed").length}</p>
+            <p className="ao-stat-label">Paid Orders</p>
+            <p className="ao-stat-value ao-green">{allOrders.filter((o) => o.status === "Paid").length}</p>
           </div>
           <div className="ao-stat-card">
             <p className="ao-stat-label">Pending</p>

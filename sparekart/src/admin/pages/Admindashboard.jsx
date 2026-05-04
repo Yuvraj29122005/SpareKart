@@ -1,57 +1,81 @@
+import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "./Adminlayout";
 import "../css/Admindashboard.css";
-
-// Static dashboard data
-const stats = [
-  {
-    label: "Total Products",
-    value: 8,
-    sub: "3 low stock",
-    icon: "📦",
-    color: "#4f46e5",
-    bg: "#ede9fe",
-  },
-  {
-    label: "Total Orders",
-    value: 2,
-    sub: "1 completed",
-    icon: "🧾",
-    color: "#16a34a",
-    bg: "#dcfce7",
-  },
-  {
-    label: "Total Users",
-    value: 2,
-    sub: "2 active",
-    icon: "👥",
-    color: "#9333ea",
-    bg: "#f3e8ff",
-  },
-  {
-    label: "Total Revenue",
-    value: "₹5,498",
-    sub: "From completed orders",
-    icon: "💰",
-    color: "#ea580c",
-    bg: "#ffedd5",
-  },
-];
-
-const orderStatus = [
-  { label: "Completed", count: 1, color: "#16a34a" },
-  { label: "Pending",   count: 1, color: "#f59e0b" },
-  { label: "Failed",    count: 0, color: "#ef4444" },
-];
-
-const categoryData = [
-  { label: "Engine",      count: 2 },
-  { label: "Brakes",      count: 2 },
-  { label: "Tyres",       count: 1 },
-  { label: "Lights",      count: 2 },
-  { label: "Accessories", count: 1 },
-];
+import { apiFetch } from "../../data/api";
 
 function AdminDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const stats = await apiFetch("/admin/dashboard");
+        setData(stats);
+      } catch {
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total Products",
+        value: data?.products ?? 0,
+        sub: `${data?.lowStock?.length ?? 0} low stock`,
+        icon: "📦",
+        color: "#4f46e5",
+        bg: "#ede9fe"
+      },
+      {
+        label: "Total Orders",
+        value: data?.orders ?? 0,
+        sub: `${data?.paidOrders ?? 0} paid`,
+        icon: "🧾",
+        color: "#16a34a",
+        bg: "#dcfce7"
+      },
+      {
+        label: "Total Users",
+        value: data?.users ?? 0,
+        sub: `${data?.users ?? 0} active`,
+        icon: "👥",
+        color: "#9333ea",
+        bg: "#f3e8ff"
+      },
+      {
+        label: "Total Revenue",
+        value: `₹${Number(data?.totalRevenue ?? 0).toLocaleString()}`,
+        sub: "From paid orders",
+        icon: "💰",
+        color: "#ea580c",
+        bg: "#ffedd5"
+      }
+    ],
+    [data]
+  );
+
+  const orderStatus = [
+    { label: "Paid", count: data?.paidOrders ?? 0, color: "#16a34a" },
+    { label: "Pending", count: data?.pendingOrders ?? 0, color: "#f59e0b" }
+  ];
+
+  const categoryData = data?.categoryBreakdown || [];
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh", width: "100%" }}>
+          <h3>Loading dashboard data...</h3>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
 
@@ -83,10 +107,25 @@ function AdminDashboard() {
         {/* Low Stock Alert */}
         <div className="dash-card low-stock-card">
           <h4 className="card-title">⚠ Low Stock Alert</h4>
-          <div className="low-stock-empty">
-            <span className="low-stock-icon">📈</span>
-            <p>All products well stocked!</p>
-          </div>
+          
+          {(data?.lowStock?.length ?? 0) > 0 ? (
+            <div className="low-stock-list" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {data.lowStock.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', background: '#fee2e2', borderRadius: '6px', color: '#991b1b', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                     <span style={{ fontWeight: '600' }}>{item.name}</span>
+                     <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>{item.category}</span>
+                  </div>
+                  <span style={{ fontWeight: 'bold' }}>{item.stock} left</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="low-stock-empty">
+              <span className="low-stock-icon">✅</span>
+              <p>All products well stocked!</p>
+            </div>
+          )}
         </div>
 
         {/* Right column */}

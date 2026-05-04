@@ -1,8 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
 // ── Data hooks ──
-import useCart from "./data/useCart";
+import useCart from "./data/Usecart";
 import useOrders from "./data/Useorders";
+import { apiFetch } from "./data/api";
 
 // ── Auth pages ──
 import Login from "./authentication/pages/Login";
@@ -23,7 +25,7 @@ import Feedback from "./user/pages/Feedback";
 // ── Admin pages ──
 import AdminDashboard    from "./admin/pages/Admindashboard";
 import AdminProducts     from "./admin/pages/Adminproducts";
-import AdminOrders       from "./admin/pages/AdminOrders";
+import AdminOrders       from "./admin/pages/Adminorders";
 import AdminOrderDetails from "./admin/pages/AdminOrderDetails";
 import AdminUsers        from "./admin/pages/AdminUsers";
 import AdminFeedback     from "./admin/pages/AdminFeedback";
@@ -32,6 +34,10 @@ import AdminProfile      from "./admin/pages/AdminProfile";
 function App() {
   const { cart, addToCart, removeFromCart, increaseQty, decreaseQty, clearCart, cartCount } = useCart();
   const { orders, addOrder, clearOrders } = useOrders(clearCart);
+
+  useEffect(() => {
+    apiFetch("/products/seed/default", { method: "POST" }).catch(() => {});
+  }, []);
 
   return (
     <Routes>

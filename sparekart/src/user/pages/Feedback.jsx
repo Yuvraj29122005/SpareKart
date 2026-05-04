@@ -2,89 +2,112 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import "../css/Feedback.css";
 import { useState } from "react";
+import { apiFetch } from "../../data/api";
 
-function Feedback(){
+// Feedback page: simple controlled form that collects
+// name, email, and message, validates them, and shows an alert.
+function Feedback() {
 
-  const [form,setForm] = useState({
-    name:"",
-    email:"",
-    message:""
-  });
+    // "form" holds values of all three inputs
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        message: ""
+    });
 
-  const [error,setError] = useState("");
+    // single error string for the form (could be expanded to field-wise)
+    const [error, setError] = useState("");
 
-  const handleChange = (e)=>{
-    setForm({...form,[e.target.name]:e.target.value});
-  };
+    // update the corresponding property in form object based on input "name" attribute
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
-  const handleSubmit = (e)=>{
-    e.preventDefault();
+    // handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // stop default page reload on submit
 
-    if(!form.name || !form.email || !form.message){
-      setError("All fields are required");
-      return;
-    }
+        // very simple validation: all 3 fields must be non-empty
+        if (!form.name || !form.email || !form.message) {
+            setError("All fields are required");
+            return;
+        }
 
-    setError("");
-    alert("Feedback submitted successfully");
-    setForm({name:"",email:"",message:""});
-  };
+        // clear any previous error and give user success feedback
+        try {
+            await apiFetch("/feedback", {
+                method: "POST",
+                body: JSON.stringify(form),
+            });
+            setError("");
+            alert("Feedback submitted successfully");
+            // reset all fields back to empty strings
+            setForm({ name: "", email: "", message: "" });
+        } catch (err) {
+            setError(err.message || "Failed to submit feedback");
+        }
+    };
 
-  return(
-    <>
-      <Navbar/>
+    return (
+        <>
+            <Navbar />
 
-      <div className="feedback-page">
+            <div className="feedback-page">
 
-        <form className="feedback-card" onSubmit={handleSubmit}>
+                {/* main feedback card in the center */}
+                <form className="feedback-card" onSubmit={handleSubmit}>
 
-          <div className="feedback-icon">💬</div>
+                    <div className="feedback-icon">💬</div>
 
-          <h2>We Value Your Feedback</h2>
-          <p className="sub">Help us improve our service</p>
+                    <h2>We Value Your Feedback</h2>
+                    <p className="sub">Help us improve our service</p>
 
-          {error && <p className="error">{error}</p>}
+                    {/* show one generic error message above fields */}
+                    {error && <p className="error">{error}</p>}
 
-          <div className="field">
-            <label>Name</label>
-            <input
-              name="name"
-              placeholder="Enter your name"
-              value={form.name}
-              onChange={handleChange}
-            />
-          </div>
+                    {/* Name input bound to form.name */}
+                    <div className="field">
+                        <label>Name</label>
+                        <input
+                            name="name"
+                            placeholder="Enter your name"
+                            value={form.name}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-          <div className="field">
-            <label>Email</label>
-            <input
-              name="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={handleChange}
-            />
-          </div>
+                    {/* Email input bound to form.email */}
+                    <div className="field">
+                        <label>Email</label>
+                        <input
+                            name="email"
+                            placeholder="Enter your email"
+                            value={form.email}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-          <div className="field">
-            <label>Message</label>
-            <textarea
-              name="message"
-              placeholder="Share your thoughts..."
-              rows="4"
-              value={form.message}
-              onChange={handleChange}
-            />
-          </div>
+                    {/* Textarea for message bound to form.message */}
+                    <div className="field">
+                        <label>Message</label>
+                        <textarea
+                            name="message"
+                            placeholder="Share your thoughts..."
+                            rows="4"
+                            value={form.message}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-          <button className="submit-btn">Submit Feedback</button>
+                    <button className="submit-btn">Submit Feedback</button>
 
-        </form>
+                </form>
 
-      </div>
+            </div>
 
-      <Footer/>
-    </>
-  );
+            <Footer />
+        </>
+    );
 }
 
 export default Feedback;

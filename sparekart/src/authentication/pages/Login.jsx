@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../css/Login.css";
 import logo from "../../images/logo.png";
+import { apiFetch, setAdminLogin, setStoredAuth, clearAllCache } from "../../data/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -14,9 +15,7 @@ function Login() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
 
-  // ── Admin credentials ──
-  const ADMIN_EMAIL = "admin@sparekart.com";
-  const ADMIN_PASSWORD = "admin123";
+
 
   const validate = () => {
     const e = {};
@@ -37,25 +36,35 @@ function Login() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
 
     if (!validate()) return;
 
-    // Check for admin login
-    if (form.email === ADMIN_EMAIL) {
-      if (form.password === ADMIN_PASSWORD) {
-        navigate("/admin/dashboard");
-        return;
-      } else {
-        setFormError("Invalid admin password");
-        return;
-      }
-    }
+    try {
+      const data = await apiFetch("/users/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password
+        })
+      });
+      
+      clearAllCache(); // ✅ wipe any cached data from previous session
+      setStoredAuth(data);
 
-    // Regular user login
-    navigate("/home");
+      // Check if the user is an admin from the database response
+      if (data.user && (data.user.role === "admin" || data.user.role === "Admin")) {
+        setAdminLogin(true);
+        navigate("/admin/dashboard");
+      } else {
+        setAdminLogin(false);
+        navigate("/home");
+      }
+    } catch (err) {
+      setFormError(err.message || "Login failed");
+    }
   };
 
   return (

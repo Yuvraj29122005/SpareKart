@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import "../css/Adminlayout.css";
 import logo from "../../images/logo.png"; // adjust path if needed
+import { clearStoredAuth, setAdminLogin, clearAllCache } from "../../data/api";
 
 function AdminLayout({ children }) {
   const navigate = useNavigate();
@@ -39,6 +40,9 @@ function AdminLayout({ children }) {
   ];
 
   const handleLogout = () => {
+    clearAllCache(); // ✅ wipe cached data
+    clearStoredAuth();
+    setAdminLogin(false);
     navigate("/login");
   };
 

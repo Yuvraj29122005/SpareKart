@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import Adminlayout from "./Adminlayout";
 import "../css/AdminUsers.css";
-
-const defaultUsers = [
-  { id: "U001", name: "Yuvraj ",   email: "yuvraj@example.com",  phone: "9876543210", orders: 1, totalSpent: "₹5,498", status: "Active" },
-  { id: "U002", name: "prince viradiya", email: "prince@example.com",  phone: "9876543211", orders: 1, totalSpent: "₹0",     status: "Active" },
-];
+import { apiFetch } from "../../data/api";
 
 const filterOptions = ["All Status", "Active", "Inactive", "Blocked"];
 
 function AdminUsers() {
-  const [users, setUsers]         = useState(defaultUsers);
+  const [users, setUsers]         = useState([]);
   const [search, setSearch]       = useState("");
   const [filter, setFilter]       = useState("All Status");
   const [filterOpen, setFilterOpen] = useState(false);
   const [actionMenu, setActionMenu] = useState(null); // user id whose menu is open
+  const [loading, setLoading] = useState(true);
 
   const menuRef = useRef(null);
 
@@ -29,29 +26,90 @@ function AdminUsers() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Block user — sets status to Inactive
-  const handleBlock = (id) => {
-    setUsers((prev) =>
-      prev.map((u) => u.id === id ? { ...u, status: "Inactive" } : u)
-    );
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch("/admin/users");
+        setUsers(
+          data.map((u) => ({
+            ...u,
+            totalSpent: `₹${Number(u.totalSpent || 0).toLocaleString()}`
+          }))
+        );
+      } catch {
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // Block user — sets status to Blocked
+  const handleBlock = async (id) => {
+    try {
+      await apiFetch(`/admin/users/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "Blocked" })
+      });
+      setUsers((prev) =>
+        prev.map((u) => u.id === id ? { ...u, status: "Blocked" } : u)
+      );
+    } catch (e) {
+      alert("Failed to block user");
+    }
+    setActionMenu(null);
+  };
+
+  // Activate user — sets status to Active
+  const handleActivate = async (id) => {
+    try {
+      await apiFetch(`/admin/users/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "Active" })
+      });
+      setUsers((prev) =>
+        prev.map((u) => u.id === id ? { ...u, status: "Active" } : u)
+      );
+    } catch (e) {
+      alert("Failed to activate user");
+    }
     setActionMenu(null);
   };
 
   // Remove user
-  const handleRemove = (id) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id));
+  const handleRemove = async (id) => {
+    if (!window.confirm("Are you sure you want to completely remove this user? This cannot be undone.")) return;
+    try {
+      await apiFetch(`/admin/users/${id}`, {
+        method: "DELETE"
+      });
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch (e) {
+      alert("Failed to remove user");
+    }
     setActionMenu(null);
   };
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     const matchSearch =
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.phone.includes(q);
+      (u.name || "").toLowerCase().includes(q) ||
+      (u.email || "").toLowerCase().includes(q) ||
+      (u.phone || "").toLowerCase().includes(q);
     const matchFilter = filter === "All Status" || u.status === filter;
     return matchSearch && matchFilter;
   });
+
+  if (loading) {
+    return (
+      <Adminlayout>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh", width: "100%" }}>
+          <h3>Loading users...</h3>
+        </div>
+      </Adminlayout>
+    );
+  }
 
   return (
     <Adminlayout>
@@ -198,12 +256,21 @@ function AdminUsers() {
                         {/* Popup menu */}
                         {actionMenu === u.id && (
                           <div className="au-action-menu">
-                            <button
-                              className="au-menu-item au-menu-block"
-                              onClick={() => handleBlock(u.id)}
-                            >
-                              🚫 Block User
-                            </button>
+                            {u.status !== "Active" ? (
+                              <button
+                                className="au-menu-item au-menu-active"
+                                onClick={() => handleActivate(u.id)}
+                              >
+                                ✅ Activate User
+                              </button>
+                            ) : (
+                              <button
+                                className="au-menu-item au-menu-block"
+                                onClick={() => handleBlock(u.id)}
+                              >
+                                🚫 Block User
+                              </button>
+                            )}
                             <button
                               className="au-menu-item au-menu-remove"
                               onClick={() => handleRemove(u.id)}

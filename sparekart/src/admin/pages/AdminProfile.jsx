@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { apiFetch } from "../../data/api";
 import AdminLayout from "./Adminlayout";
 import "../css/AdminProfile.css";
 import userImg from "../../images/user.png";
@@ -9,16 +10,39 @@ function AdminProfile() {
 
   // Default user — resets on refresh (fully static)
   const defaultAdmin = {
-    name: "Admin",
-    email: "admin@carparts.com",
-    phone: "+91 9876543210",
-    address: "rk university,rajkot,gujarat,360020",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
     image: userImg,
   };
 
   const [admin, setAdmin] = useState(defaultAdmin);
   const [form, setForm] = useState({ ...defaultAdmin }); // separate edit copy
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const data = await apiFetch("/users/me");
+        const profileData = {
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          address: data.address || "",
+          image: data.avatar || userImg,
+        };
+        setAdmin(profileData);
+        setForm(profileData);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMe();
+  }, []);
 
   // Validate edit form
   const validate = () => {
@@ -36,24 +60,48 @@ function AdminProfile() {
     setEdit(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
-    setAdmin({ ...form });  // save form back to admin
-    setEdit(false);
+    try {
+        const data = await apiFetch("/users/me", {
+            method: "PUT",
+            body: JSON.stringify({
+                name: form.name,
+                phone: form.phone,
+                address: form.address,
+                avatar: form.image !== userImg ? form.image : ""
+            })
+        });
+        const profileData = {
+            name: data.name || "",
+            email: data.email || "",
+            phone: data.phone || "",
+            address: data.address || "",
+            image: data.avatar || userImg,
+        };
+        setAdmin(profileData);
+        setEdit(false);
+    } catch (err) {
+        alert(err.message || "Failed to update profile");
+    }
   };
 
   // Profile photo change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setForm((prev) => ({ ...prev, image: url }));
-      // Also update display immediately if we want it to react like the screenshot
-      if (!edit) {
-        setAdmin((prev) => ({ ...prev, image: url }));
-      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setForm((prev) => ({ ...prev, image: reader.result }));
+        if (!edit) {
+          setAdmin((prev) => ({ ...prev, image: reader.result }));
+        }
+      };
     }
   };
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading profile...</div>;
 
   return (
     <AdminLayout>
